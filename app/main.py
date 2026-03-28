@@ -26,3 +26,10 @@ def actualizar_estado(pieza_id: int, estado: str):
             return {"mensaje": "estado actualizado", "pieza": pieza}
     
     return {"error": "pieza no encontrada"}
+
+from fastapi.responses import HTMLResponse
+
+@app.get("/vista", response_class=HTMLResponse)
+def vista():
+    with open("app/templates/index.html", encoding="utf-8") as f:
+        return f.read()

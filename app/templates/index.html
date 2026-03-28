@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Piezas</title>
+</head>
+<body>
+
+<h1>Lista de piezas</h1>
+
+<ul id="lista"></ul>
+
+<script>
+function cambiarEstado(id, nuevoEstado) {
+    fetch(`http://127.0.0.1:8000/piezas/${id}?estado=${nuevoEstado}`, {
+        method: "PUT"
+    })
+    .then(response => response.json())
+    .then(() => location.reload())
+    .catch(error => console.error("Error:", error));
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const lista = document.getElementById("lista");
+
+    fetch("http://127.0.0.1:8000/piezas")
+        .then(response => response.json())
+        .then(data => {
+
+            lista.innerHTML = "";
+
+            data.forEach(pieza => {
+                const li = document.createElement("li");
+
+                li.textContent = pieza.nombre + " - " + pieza.estado + " ";
+
+                const btn1 = document.createElement("button");
+                btn1.textContent = "Pendiente";
+                btn1.onclick = () => cambiarEstado(pieza.id, "pendiente");
+
+                const btn2 = document.createElement("button");
+                btn2.textContent = "Proceso";
+                btn2.onclick = () => cambiarEstado(pieza.id, "proceso");
+
+                const btn3 = document.createElement("button");
+                btn3.textContent = "Terminado";
+                btn3.onclick = () => cambiarEstado(pieza.id, "terminado");
+
+                li.appendChild(btn1);
+                li.appendChild(btn2);
+                li.appendChild(btn3);
+
+                lista.appendChild(li);
+            });
+
+        });
+
+});
+</script>
+
+</body>
+</html>
