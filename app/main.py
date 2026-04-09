@@ -33,3 +33,4 @@ from fastapi.responses import HTMLResponse
 def vista():
     with open("app/templates/index.html", encoding="utf-8") as f:
         return f.read()
+    
