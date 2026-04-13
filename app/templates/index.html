@@ -1,62 +1,380 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Piezas</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MultiPack - Panel de Control</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    /* ── Paleta de colores basada en las imágenes ── */
+    :root {
+      --teal:    #1ab5b5;   /* panel de temperaturas */
+      --blue:    #1565c0;   /* fondo pantalla HMI    */
+      --green:   #2e7d32;   /* botón MARCHA          */
+      --red:     #c62828;   /* botón PARADA          */
+      --yellow:  #f9a825;   /* textos resaltados     */
+      --light-bg:#f0f8ff;   /* fondo general         */
+      --card-bg: #ffffff;
+      --text:    #1a2535;
+    }
+
+    /* ── Fondo general ── */
+    body {
+      background: var(--light-bg);
+      font-family: 'Segoe UI', sans-serif;
+      color: var(--text);
+    }
+
+    /* ── Cabecera con logos ── */
+    header {
+      background: linear-gradient(135deg, var(--blue) 60%, var(--teal));
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+    }
+
+    /* Logos misma altura */
+    header img { height: 62px; object-fit: contain; }
+
+    /* Título central en cabecera */
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+
+    /* ── Sección de búsqueda ── */
+    #searchSection { padding: 28px 20px 0; }
+
+    #searchSection .input-group { max-width: 540px; margin: auto; }
+
+    /* Botón de búsqueda con color teal */
+    #btnBuscar {
+      background: var(--teal);
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      padding: 0 22px;
+    }
+    #btnBuscar:hover { background: var(--blue); }
+
+    /* ── Tabs de estado (Proceso / Terminadas / Pendientes) ── */
+    #estadoTabs .nav-link {
+      color: var(--blue);
+      font-weight: 600;
+      border-radius: 8px 8px 0 0;
+    }
+    #estadoTabs .nav-link.active {
+      background: var(--teal);
+      color: #fff;
+      border-color: var(--teal);
+    }
+
+    /* ── Tarjetas de máquina ── */
+    .machine-card {
+      border-left: 5px solid var(--teal);
+      border-radius: 10px;
+      background: var(--card-bg);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: transform .2s;
+    }
+    .machine-card:hover { transform: translateY(-3px); }
+
+    /* Colores de badge por estado */
+    .badge-proceso    { background: var(--yellow); color: #000; }
+    .badge-terminada  { background: var(--green);  color: #fff; }
+    .badge-pendiente  { background: var(--red);    color: #fff; }
+
+    /* ── Tabla de stock de piezas ── */
+    #stockSection { padding: 30px 20px; }
+
+    #stockSection h5 {
+      color: var(--blue);
+      font-weight: 700;
+      border-bottom: 3px solid var(--teal);
+      padding-bottom: 6px;
+    }
+
+    /* Fila de encabezado tabla */
+    thead { background: var(--blue); color: #fff; }
+
+    /* Input de bodega pequeño y limpio */
+    .bodega-input {
+      border: 1.5px solid var(--teal);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: .85rem;
+      width: 110px;
+    }
+
+    /* Botón guardar ubicación */
+    .btn-save {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: .82rem;
+    }
+    .btn-save:hover { background: #1b5e20; }
+
+    /* ── Pie de página ── */
+    footer {
+      text-align: center;
+      padding: 12px;
+      font-size: .78rem;
+      color: #888;
+      border-top: 1px solid #ddd;
+      margin-top: 30px;
+    }
+  </style>
 </head>
 <body>
 
-<h1>Lista de piezas</h1>
 
-<ul id="lista"></ul>
+<header>
+  <!-- Logo MultiPack (izquierda) -->
+  <img src="logos/Multipack.png"
+       alt="MultiPack"
+       onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"/>
+  <span style="display:none;color:#fff;font-weight:800;font-size:1.1rem;">MultiPack</span>
 
+  <!-- Título central -->
+  <h1>PANEL DE CONTROL<br><small style="font-weight:400;font-size:.8rem;opacity:.85;">MULTIPACK</small></h1>
+
+  <!-- Logo AutoPacked (derecha) -->
+  <img src="logos/Autopacked.png"
+       alt="AutoPacked"
+       onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"/>
+  <span style="display:none;color:#fff;font-weight:800;font-size:1.1rem;">AutoPacked</span>
+</header>
+
+<!-- ══════════════ BÚSQUEDA DE MÁQUINA ══════════════ -->
+<section id="searchSection">
+  <h5 class="text-center mb-3" style="color:var(--blue);font-weight:700;">
+    <i class="bi bi-search me-2"></i>Buscar Máquina
+  </h5>
+  <!-- Campo de búsqueda con botón -->
+  <div class="input-group shadow-sm">
+    <span class="input-group-text bg-white border-end-0">
+      <i class="bi bi-cpu" style="color:var(--teal)"></i>
+    </span>
+    <input id="inputMaquina" type="text" class="form-control border-start-0"
+           placeholder="Ej: Acrilico Posterior, MP-001…"/>
+    <button id="btnBuscar" onclick="buscarMaquina()">
+      <i class="bi bi-search me-1"></i>Buscar
+    </button>
+  </div>
+</section>
+
+<!-- ══════════════ RESULTADOS (oculto al inicio) ══════════════ -->
+<section id="resultSection" class="container-fluid px-3 mt-4" style="display:none;">
+
+  <!-- Nombre de máquina encontrada -->
+  <div class="alert d-flex align-items-center gap-2"
+       style="background:var(--teal);color:#fff;border-radius:10px;">
+    <i class="bi bi-gear-fill fs-4"></i>
+    <div>
+      <strong id="nombreMaquina">—</strong>
+      <div style="font-size:.82rem;opacity:.9;">Selecciona una pestaña para ver el estado</div>
+    </div>
+  </div>
+
+  <!-- Pestañas de estado -->
+  <ul class="nav nav-tabs" id="estadoTabs">
+    <li class="nav-item">
+      <!-- Tab: En Proceso -->
+      <button class="nav-link active" onclick="mostrarTab('proceso',this)">
+        <i class="bi bi-arrow-repeat me-1"></i>En Proceso
+      </button>
+    </li>
+    <li class="nav-item">
+      <!-- Tab: Terminadas -->
+      <button class="nav-link" onclick="mostrarTab('terminada',this)">
+        <i class="bi bi-check-circle me-1"></i>Terminadas
+      </button>
+    </li>
+    <li class="nav-item">
+      <!-- Tab: Pendientes -->
+      <button class="nav-link" onclick="mostrarTab('pendiente',this)">
+        <i class="bi bi-hourglass-split me-1"></i>Pendientes
+      </button>
+    </li>
+  </ul>
+
+  <!-- Contenedor de tarjetas filtradas -->
+  <div id="tarjetasContainer" class="row g-3 mt-1 pb-2"></div>
+</section>
+
+<!-- ══════════════ STOCK DE PIEZAS ══════════════ -->
+<section id="stockSection" class="container-fluid">
+  <h5><i class="bi bi-boxes me-2"></i>Stock de Piezas</h5>
+
+  <!-- Tabla de piezas con campo de bodega editable -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+      <thead>
+        <tr>
+          <th>Ref.</th>
+          <th>Nombre</th>
+          <th>Cant.</th>
+          <th>Tipo</th>
+          <th>Ubicación en Bodega</th>
+          <th>Guardar</th>
+        </tr>
+      </thead>
+      <tbody id="stockBody">
+        <!-- Filas generadas por JS -->
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════ PIE ══════════════ -->
+<footer>© 2025 MultiPack · AutoPacked — Todos los derechos reservados</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-function cambiarEstado(id, nuevoEstado) {
-    fetch(`http://127.0.0.1:8000/piezas/${id}?estado=${nuevoEstado}`, {
-        method: "PUT"
-    })
-    .then(response => response.json())
-    .then(() => location.reload())
-    .catch(error => console.error("Error:", error));
+/* ── Datos de ejemplo (máquinas) ── */
+const maquinas = [
+  { nombre:"Acrilico Posterior", estado:"proceso",   orden:"OP-001", operario:"Carlos M.",  avance:"65%" },
+  { nombre:"Acrilico Posterior", estado:"terminada", orden:"OP-009", operario:"Luisa P.",   avance:"100%" },
+  { nombre:"Acrilico Posterior", estado:"pendiente", orden:"OP-015", operario:"Sin asignar",avance:"0%" },
+  { nombre:"Cerradura Iman",     estado:"proceso",   orden:"OP-003", operario:"Andrés R.",  avance:"40%" },
+  { nombre:"Posicion Trasera",   estado:"terminada", orden:"OP-007", operario:"María T.",   avance:"100%" },
+];
+
+/* ── Piezas de stock ── */
+const piezas = [
+  { ref:"P10",    nombre:"Arandela Montaje Lateral Acrilico", cant:6,  tipo:"Fabricada" },
+  { ref:"P12",    nombre:"Eje Aluminio 3/4\" Union Acrilico", cant:2,  tipo:"Fabricada" },
+  { ref:"BJS",    nombre:"Perilla Acrilico Bobinador",        cant:6,  tipo:"Fabricada" },
+  { ref:"F75L8",  nombre:"Platina en L Inferior Union",       cant:2,  tipo:"Laser" },
+  { ref:"F76L8",  nombre:"Platina en L Superior Union",       cant:2,  tipo:"Laser" },
+  { ref:"TBCC24", nombre:"Tornillo BCC 8×30",                 cant:6,  tipo:"Tornillo" },
+  { ref:"TBCA11", nombre:"Tornillo BCA 10×70",                cant:8,  tipo:"Tornillo" },
+  { ref:"BSG1",   nombre:"Bisagra para Puertas Traseras",     cant:4,  tipo:"General" },
+  { ref:"IMN1",   nombre:"Iman para la Puerta en Acrilico",   cant:4,  tipo:"General" },
+  { ref:"F1L16",  nombre:"Platinas Union Imanes",             cant:4,  tipo:"Laser" },
+];
+
+/* ── Estado activo de tab ── */
+let tabActivo = "proceso";
+
+/* ── Función: buscar máquina y mostrar resultados ── */
+function buscarMaquina() {
+  const query = document.getElementById('inputMaquina').value.trim();
+  if (!query) { alert("Ingresa el nombre o código de la máquina."); return; }
+
+  // Actualizar nombre en el panel de resultados
+  document.getElementById('nombreMaquina').textContent = query;
+
+  // Mostrar sección de resultados
+  document.getElementById('resultSection').style.display = 'block';
+
+  // Renderizar tarjetas con el tab activo actual
+  renderTarjetas(tabActivo, query);
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+/* ── Función: cambiar tab de estado ── */
+function mostrarTab(estado, btn) {
+  tabActivo = estado;
 
-    const lista = document.getElementById("lista");
+  // Quitar clase activa de todos los botones de tab
+  document.querySelectorAll('#estadoTabs .nav-link')
+    .forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 
-    fetch("http://127.0.0.1:8000/piezas")
-        .then(response => response.json())
-        .then(data => {
+  // Volver a renderizar con el nuevo filtro
+  const query = document.getElementById('inputMaquina').value.trim();
+  renderTarjetas(estado, query);
+}
 
-            lista.innerHTML = "";
+/* ── Función: renderizar tarjetas filtradas ── */
+function renderTarjetas(estado, query) {
+  const cont = document.getElementById('tarjetasContainer');
 
-            data.forEach(pieza => {
-                const li = document.createElement("li");
+  // Filtrar por nombre (parcial) y estado
+  const filtradas = maquinas.filter(m =>
+    m.nombre.toLowerCase().includes(query.toLowerCase()) &&
+    m.estado === estado
+  );
 
-                li.textContent = pieza.nombre + " - " + pieza.estado + " ";
+  // Badge según estado
+  const badgeClass = { proceso:'badge-proceso', terminada:'badge-terminada', pendiente:'badge-pendiente' };
+  const badgeText  = { proceso:'En Proceso',    terminada:'Terminada',       pendiente:'Pendiente' };
 
-                const btn1 = document.createElement("button");
-                btn1.textContent = "Pendiente";
-                btn1.onclick = () => cambiarEstado(pieza.id, "pendiente");
+  // Construir HTML de tarjetas
+  cont.innerHTML = filtradas.length
+    ? filtradas.map(m => `
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="machine-card p-3">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <strong>${m.nombre}</strong><br/>
+                <small class="text-muted">Orden: ${m.orden}</small>
+              </div>
+              <span class="badge ${badgeClass[m.estado]}">${badgeText[m.estado]}</span>
+            </div>
+            <hr class="my-2"/>
+            <!-- Operario y barra de avance -->
+            <small><i class="bi bi-person me-1"></i>${m.operario}</small>
+            <div class="progress mt-2" style="height:8px;">
+              <div class="progress-bar" style="width:${m.avance};background:var(--teal)"></div>
+            </div>
+            <small class="text-muted">${m.avance} completado</small>
+          </div>
+        </div>`)
+      .join('')
+    : `<div class="col-12 text-center text-muted py-4">
+         <i class="bi bi-inbox fs-1"></i>
+         <p class="mt-2">No hay órdenes con estado <strong>${badgeText[estado]}</strong> para esta máquina.</p>
+       </div>`;
+}
 
-                const btn2 = document.createElement("button");
-                btn2.textContent = "Proceso";
-                btn2.onclick = () => cambiarEstado(pieza.id, "proceso");
+/* ── Función: renderizar tabla de stock ── */
+function renderStock() {
+  const body = document.getElementById('stockBody');
 
-                const btn3 = document.createElement("button");
-                btn3.textContent = "Terminado";
-                btn3.onclick = () => cambiarEstado(pieza.id, "terminado");
+  body.innerHTML = piezas.map((p, i) => `
+    <tr>
+      <td><code>${p.ref}</code></td>
+      <td>${p.nombre}</td>
+      <td><strong>${p.cant}</strong></td>
+      <td><span class="badge" style="background:var(--blue)">${p.tipo}</span></td>
+      <!-- Campo editable de ubicación en bodega -->
+      <td>
+        <input id="bodega_${i}" type="text" class="bodega-input"
+               placeholder="Ej: Estante A-3"
+               value="${localStorage.getItem('bodega_'+p.ref) || ''}"/>
+      </td>
+      <!-- Botón guardar ubicación -->
+      <td>
+        <button class="btn-save" onclick="guardarUbicacion(${i},'${p.ref}')">
+          <i class="bi bi-save me-1"></i>OK
+        </button>
+      </td>
+    </tr>`).join('');
+}
 
-                li.appendChild(btn1);
-                li.appendChild(btn2);
-                li.appendChild(btn3);
+/* ── Función: guardar ubicación en localStorage ── */
+function guardarUbicacion(i, ref) {
+  const val = document.getElementById('bodega_' + i).value.trim();
+  localStorage.setItem('bodega_' + ref, val);   // persistir en el navegador
+  alert(`Ubicación guardada para ${ref}: ${val || '(vacío)'}`);
+}
 
-                lista.appendChild(li);
-            });
-
-        });
-
-});
+/* ── Inicializar tabla de stock al cargar ── */
+renderStock();
 </script>
-
 </body>
 </html>
